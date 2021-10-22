@@ -13,7 +13,6 @@
 
 #include <iostream>
 #include <string>
-#include <iomanip>
 
 using namespace std;
 
@@ -27,24 +26,25 @@ bool operator > (Check& check, float amount);
 
 ostream& operator << (ostream& os, Check& check);
 
+bool operator <= (Check& check, float amount);
+
 class CheckBook{
 public:
     Check *chkPtr;
-    void lastDeposit();//still need to write
-    void setBalance(float amount){balance=amount;}
-    void setCheckBookSize(int num){checkBookSize=num;}
-    void setNumberOfChecks(int num){numberOfChecks=num;}
-    int const getNumberOfChecks(){return numberOfChecks;}
-    int const getCheckBookSize(){return checkBookSize;}
-    float const getBalance(){return balance;}
-    CheckBook(): balance(0), numberOfChecks(0), checkBookSize(4){}
-    CheckBook(int num): numberOfChecks(0), checkBookSize(2) {balance=num; chkPtr= new Check[checkBookSize];}
-    ~CheckBook(){};
-    void doubleCheckBookSize();
-    //CheckBook(const Check &check) {=check.checkAmount; }//still need to write - Copy Constructor
-    void deposit(int amount){balance+=amount;}
-    bool writeCheck(Check c_amount);
-    void const displayChecks();
+    void lastDeposit();//displays last check
+    void setBalance(float amount){balance=amount;}//sets balance to an amount
+    void setCheckBookSize(int num){checkBookSize=num;} //sets checkBookSize to a num
+    void setNumberOfChecks(int num){numberOfChecks=num;}//sets numberOfChecks to a num
+    int const getNumberOfChecks(){return numberOfChecks;}//returns the number of checks
+    int const getCheckBookSize(){return checkBookSize;}//returns the size of the checkbook
+    float const getBalance(){return balance;}//returns the current balance
+    CheckBook(): balance(0), numberOfChecks(0), checkBookSize(4){}//default constructor
+    CheckBook(int num): numberOfChecks(0), checkBookSize(2) {balance=num; chkPtr= new Check[checkBookSize];} //constructor that sets the starting numbers in main
+    ~CheckBook(){};//deconstructor
+    void doubleCheckBookSize();//doubles the size of the checkbook
+    void deposit(int amount){balance+=amount;}//adds an amount to the current balance
+    bool writeCheck(Check c_amount);//writes the check and updates the necessary elements while doing so
+    void const displayChecks();//displays all checks in order starting with the most recent check
 private:
     float balance;
     int numberOfChecks,checkBookSize;
@@ -59,22 +59,29 @@ int main() {
 
     return 0;
 }
-
+//lets a check be compared to an amount to see if the check amount is less than or equal to the float amount
+bool operator <= (Check& check, float amount){
+    if (check.checkAmount<=amount){
+        return true;
+    }
+    return false;
+}
+//lets a check be compared to an amount to see if the check amount greater than the float amount
 bool operator > (Check& check, float amount){
    if (check.checkAmount>amount){
        return true;
    }
    return false;
 }
-
+//allows the cout of a check and displays the information within a check
 ostream& operator << (ostream& os, Check& check){
     os << check.checkNum << " " << check.checkAmount << " " << check.checkMemo << endl;
     return os;
 }
-
+//writes the check and updates members as needed
 bool CheckBook::writeCheck(Check c_amount) {
         if (c_amount > balance)
-            return true;
+            return false;
         else {
             const string randomMemo[6] = {"Pizza", "Food", "Drinks", "Wedding", "Ice Hockey", "Football Game"};
             int randomNumberGen = rand() % 6;
@@ -85,21 +92,23 @@ bool CheckBook::writeCheck(Check c_amount) {
             balance -= c_amount.checkAmount;
         }
 }
-
+//display checks in chronological order staring from the most recent
 void const CheckBook::displayChecks() {
     for(int i=numberOfChecks;i>0;i--)
         cout << chkPtr[i-1];
 }
-
+//runs the functions created to make sure checkbook doubles when necessary, makes sure the writecheck function is working properly, and makes sure the displayChecks function is also working properly
 void checkTest(CheckBook checkBook, int bal){
-    cout << "_________________________________________\nLast Deposit written as a check is made and notification for the new checkbook being ordered:\n"<< endl;
-    while (checkBook.getBalance()>0) {
+    cout << "_________________________________________\nLast Deposit written as a check is made, balance after the check goes through, and notification for the new checkbook being ordered:\n"<< endl;
     Check c_amount;
+    c_amount.checkAmount = 37;
+    while (c_amount<=checkBook.getBalance()) {
     checkBook.setBalance(bal);
-    c_amount.checkAmount = 50;
+    c_amount.checkAmount = 334;
     checkBook.writeCheck(c_amount);
     checkBook.lastDeposit();
-        if(checkBook.getCheckBookSize()==checkBook.getNumberOfChecks())
+    cout << checkBook.getBalance() << endl;
+        if(checkBook.getCheckBookSize()/2==checkBook.getNumberOfChecks())
             checkBook.doubleCheckBookSize();
     bal-=c_amount.checkAmount;
     }
@@ -107,10 +116,11 @@ void checkTest(CheckBook checkBook, int bal){
     checkBook.displayChecks();
     cout << "\n_________________________________________\n"<< endl;
 }
+//displays the last deposited amount
 void CheckBook::lastDeposit() {
     cout<<chkPtr[numberOfChecks-1];
 }
-
+//doubles the size of the check book
 void CheckBook::doubleCheckBookSize(){
     Check *ptr = new Check [2*checkBookSize];
     for(int i=0; i<numberOfChecks;i++){
